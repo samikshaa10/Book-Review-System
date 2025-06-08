@@ -1,0 +1,235 @@
+# Book Review API
+
+A RESTful API for a basic book review system built with Node.js, Express, MongoDB, and JWT authentication.
+
+## 🔧 Tech Stack
+
+* **Node.js**: JavaScript runtime
+* **Express.js**: Web application framework for Node.js
+* **MongoDB**: NoSQL database (Mongoose for ODM)
+* **JWT (JSON Web Tokens)**: For authentication
+* **bcryptjs**: For password hashing
+* **dotenv**: For environment variables
+* **express-validator**: For request data validation
+
+## 🚀 Features
+
+### Authentication
+
+* `POST /api/auth/signup`: Register a new user.
+* `POST /api/auth/login`: Authenticate a user and return a JWT.
+
+### Core Features
+
+* `POST /api/books`: Add a new book (Authenticated users only).
+* `GET /api/books`: Get all books with pagination and optional filters (by author, genre).
+* `GET /api/books/:id`: Get book details by ID, including average rating and paginated reviews.
+* `POST /api/books/:bookId/reviews`: Submit a review for a book (Authenticated users only, one review per user per book).
+* `PUT /api/reviews/:id`: Update your own review (Authenticated users only).
+* `DELETE /api/reviews/:id`: Delete your own review (Authenticated users only).
+
+### Additional Feature
+
+* `GET /api/search?q={query}`: Search books by title or author (partial and case-insensitive).
+
+## 📦 Project Setup Instructions
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone [https://github.com/your-username/book-review-api.git](https://github.com/your-username/book-review-api.git)
+    cd book-review-api
+    ```
+
+2.  **Install dependencies:**
+
+    ```bash
+    npm install
+    ```
+
+3.  **Create a `.env` file:**
+    Create a file named `.env` in the root directory and add the following environment variables. Replace placeholders with your actual values.
+
+    ```env
+    PORT=3000
+    MONGO_URI=mongodb://localhost:27017/bookreviewdb
+    JWT_SECRET=your_super_secret_jwt_key_here
+    ```
+    * `PORT`: The port your server will run on.
+    * `MONGO_URI`: Your MongoDB connection string. If running locally, ensure MongoDB is installed and running.
+    * `JWT_SECRET`: A strong, random string used to sign your JWTs. You can generate one using `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` in your terminal.
+
+4.  **Start MongoDB:**
+    Ensure your MongoDB instance is running. For local development, you might start it with `mongod`.
+
+5.  **Run the application:**
+
+    ```bash
+    npm start
+    # or
+    node server.js
+    ```
+
+    The server will start on the specified `PORT` (default: 3000). You should see messages like "MongoDB Connected" and "Server running on port 3000".
+
+## 🛠️ Example API Requests
+
+You can use `curl` or Postman/Insomnia to test the API endpoints.
+
+### Authentication
+
+**1. User Signup**
+
+* **Endpoint:** `POST /api/auth/signup`
+* **Body (JSON):**
+    ```json
+    {
+        "username": "testuser",
+        "email": "test@example.com",
+        "password": "password123"
+    }
+    ```
+* **cURL Example:**
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '{"username": "testuser", "email": "test@example.com", "password": "password123"}' http://localhost:5500/api/auth/signup
+    ```
+
+**2. User Login**
+
+* **Endpoint:** `POST /api/auth/login`
+* **Body (JSON):**
+    ```json
+    {
+        "email": "test@example.com",
+        "password": "password123"
+    }
+    ```
+* **cURL Example:**
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -d '{"email": "test@example.com", "password": "password123"}' http://localhost:55000/api/auth/login
+    ```
+    * **Response will include a `token`. Use this token in the `Authorization` header for authenticated requests (e.g., `Bearer YOUR_JWT_TOKEN`).**
+
+### Books
+
+**1. Add a New Book (Authenticated)**
+
+* **Endpoint:** `POST /api/books`
+* **Headers:** `Authorization: Bearer YOUR_JWT_TOKEN`
+* **Body (JSON):**
+    ```json
+    {
+        "title": "The Hitchhiker's Guide to the Galaxy",
+        "author": "Douglas Adams",
+        "genre": "Science Fiction",
+        "publicationYear": 1979,
+        "description": "A comedic science fiction series."
+    }
+    ```
+* **cURL Example:**
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer YOUR_JWT_TOKEN" -d '{"title": "The Hitchhiker'\''s Guide to the Galaxy", "author": "Douglas Adams", "genre": "Science Fiction", "publicationYear": 1979, "description": "A comedic science fiction series."}' http://localhost:3000/api/books
+    ```
+
+**2. Get All Books (with pagination and filters)**
+
+* **Endpoint:** `GET /api/books?page=1&limit=5&author=douglas&genre=fiction`
+* **cURL Example:**
+    ```bash
+    curl http://localhost:3000/api/books?page=1&limit=5&author=douglas&genre=fiction
+    ```
+
+**3. Get Book Details by ID**
+
+* **Endpoint:** `GET /api/books/:id` (Replace `:id` with actual book ID)
+* **cURL Example:**
+    ```bash
+    curl http://localhost:3000/api/books/652f1e4a3c1d0f5e7c8b9a01 # Replace with a valid book ID
+    ```
+
+### Reviews
+
+**1. Submit a Review (Authenticated)**
+
+* **Endpoint:** `POST /api/books/:bookId/reviews` (Replace `:bookId` with actual book ID)
+* **Headers:** `Authorization: Bearer YOUR_JWT_TOKEN`
+* **Body (JSON):**
+    ```json
+    {
+        "rating": 5,
+        "comment": "An absolutely brilliant read!"
+    }
+    ```
+* **cURL Example:**
+    ```bash
+    curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer YOUR_JWT_TOKEN" -d '{"rating": 5, "comment": "An absolutely brilliant read!"}' http://localhost:3000/api/books/652f1e4a3c1d0f5e7c8b9a01/reviews # Replace with a valid book ID
+    ```
+
+**2. Update Your Own Review (Authenticated)**
+
+* **Endpoint:** `PUT /api/reviews/:id` (Replace `:id` with actual review ID)
+* **Headers:** `Authorization: Bearer YOUR_JWT_TOKEN`
+* **Body (JSON):**
+    ```json
+    {
+        "rating": 4,
+        "comment": "Still brilliant, but could be a bit longer."
+    }
+    ```
+* **cURL Example:**
+    ```bash
+    curl -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer YOUR_JWT_TOKEN" -d '{"rating": 4, "comment": "Still brilliant, but could be a bit longer."}' http://localhost:5500/api/reviews/652f1e4a3c1d0f5e7c8b9a02 # Replace with a valid review ID
+    ```
+
+**3. Delete Your Own Review (Authenticated)**
+
+* **Endpoint:** `DELETE /api/reviews/:id` (Replace `:id` with actual review ID)
+* **Headers:** `Authorization: Bearer YOUR_JWT_TOKEN`
+* **cURL Example:**
+    ```bash
+    curl -X DELETE -H "Authorization: Bearer YOUR_JWT_TOKEN" http://localhost:5500/api/reviews/652f1e4a3c1d0f5e7c8b9a02 # Replace with a valid review ID
+    ```
+
+### Search
+
+**1. Search Books by Title or Author**
+
+* **Endpoint:** `GET /api/search?q=galaxy&page=1&limit=5`
+* **cURL Example:**
+    ```bash
+    curl http://localhost:5500/api/search?q=galaxy&page=1&limit=5
+    ```
+
+## 📚 Database Schema
+
+### User Schema
+
+```javascript
+// models/User.js
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+// Pre-save hook for password hashing
+// Method for password comparison
